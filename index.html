@@ -1,4 +1,4 @@
-<!doctype html><html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!doctype html><html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>SELAH · Escuela de Música</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0a0806">
 <link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Jost:wght@400;500&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@ button.o{background:none;border:1px solid var(--g);color:var(--g2)}button.x{back
 section{padding:4rem 1.2rem;max-width:1000px;margin:auto}
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.6rem}.gal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px}
 .card{background:var(--s);border:1px solid #2c2315;border-radius:10px;padding:1rem;margin:.6rem 0}
-input,select{width:100%;background:#0f0c08;color:var(--t);border:1px solid #3a2e19;border-radius:8px;padding:.6rem;margin:.3rem 0 .8rem;font:inherit}
+input,select,textarea{width:100%;background:#0f0c08;color:var(--t);border:1px solid #3a2e19;border-radius:8px;padding:.6rem;margin:.3rem 0 .8rem;font:inherit}
 label.ck{display:inline-flex;gap:.4rem;align-items:center;margin:.2rem .8rem .2rem 0}label.ck input{width:auto;margin:0}
 .radio{display:flex;gap:1rem;align-items:center}.radio button{width:64px;height:64px;font-size:1.6rem;padding:0}
 .modal{position:fixed;inset:0;background:#000c;z-index:20;display:grid;place-items:center;padding:1rem}.modal .card{width:min(380px,100%)}
@@ -28,6 +28,18 @@ label.ck{display:inline-flex;gap:.4rem;align-items:center;margin:.2rem .8rem .2r
 .row{display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}.av{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--g)}
 .mat{min-height:120px;background-size:cover;background-position:center}small{color:var(--m)}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+textarea{resize:vertical}
+html{-webkit-text-size-adjust:100%}body{overflow-x:hidden;overflow-wrap:break-word}
+h2{font-size:clamp(1.8rem,6vw,2.4rem)}
+nav{padding-top:calc(.6rem + env(safe-area-inset-top))}
+.hero{height:100vh;height:100svh}.hero h1{font-size:clamp(2.4rem,10vw,4.6rem);text-shadow:0 2px 24px #000}.hero small{letter-spacing:.35em;color:var(--g);display:block;margin-bottom:.8rem;font-size:.8rem}
+.hero p{text-shadow:0 1px 12px #000;color:var(--t)}
+.glow{animation:pulse 2.2s infinite;font-size:1.1rem;padding:.8rem 1.8rem}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #f3d48acc,0 0 14px #d9a44166}70%{box-shadow:0 0 0 20px #f3d48a00,0 0 34px #d9a441aa}100%{box-shadow:0 0 0 0 #f3d48a00,0 0 14px #d9a44166}}
+.lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.8rem}.pdf .cv{aspect-ratio:3/4;background:#0f0c08 center/cover;border-radius:8px;display:grid;place-items:center;font-size:2.5rem;margin-bottom:.5rem}
+.gal{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.radio{flex-wrap:wrap}
+@media(prefers-reduced-motion:reduce){.glow{animation:none}}
+@media(max-width:560px){.ni{display:none}nav{gap:.5rem;padding:.5rem .8rem;padding-top:calc(.5rem + env(safe-area-inset-top))}nav img{height:38px}nav button{padding:.5rem .9rem;font-size:.9rem}section{padding:2.5rem 1rem}.big{font-size:2.2rem;padding:1rem}.tabs{margin-top:5rem}.radio button{width:56px;height:56px}}
 </style></head><body><div id="app"></div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -56,11 +68,11 @@ let ev;addEventListener("beforeinstallprompt",e=>{e.preventDefault();ev=e;$("#in
 
 /* ---------- LANDING ---------- */
 async function landing(){
- location.hash="";
- A.innerHTML=`<nav><img src="logo.png" alt="SELAH"><span></span><a href="#insc" onclick="document.getElementById('insc').scrollIntoView()">Inscribite</a>
+ document.getElementById("lm")?.remove();location.hash="";
+ A.innerHTML=`<nav><img src="logo.png" alt="SELAH"><span></span><a class="ni" href="#insc" onclick="document.getElementById('insc').scrollIntoView()">Inscribite</a>
  <button id="inst" class="o" hidden onclick="ev2()">Instalar app</button><button onclick="loginM()">${me?"Mi panel":"Ingresar"}</button></nav>
- <header class="hero" id="hero"><div class="c"><img src="logo.png" alt="SELAH Escuela de Música"><p>Aprendé música en comunidad. Clases, instrumentos y mucho oído.</p>
- <a class="b" href="#insc" onclick="document.getElementById('insc').scrollIntoView()">Quiero inscribirme</a></div></header>
+ <header class="hero" id="hero"><div class="c"><small>ESCUELA DE MÚSICA</small><h1>Aprendé música<br>en comunidad</h1><p>Clases, instrumentos y mucho oído.</p>
+ <a class="b glow" href="#insc" onclick="document.getElementById('insc').scrollIntoView()">Quiero inscribirme</a></div></header>
  <section><h2>Radio SELAH</h2><div class="card radio"><button id="pl" aria-label="Reproducir">▶</button><div><b id="rt">Radio interna de la escuela</b><br><small id="rs">Tocá play para escuchar lo que está sonando ahora.</small></div><audio id="au"></audio></div></section>
  <section><h2>Galería</h2><div class="gal" id="gal"><small>Pronto vas a ver fotos de nuestras clases.</small></div></section>
  <section id="insc"><h2>Inscripción</h2><div class="card"><form id="fi"><label>Nombre completo<input name="n" required></label>
@@ -96,7 +108,7 @@ async function radio(){
 }
 /* ---------- PANEL ---------- */
 function panel(){
- location.hash="#panel";const adm=me.role==="admin";
+ document.getElementById("lm")?.remove();location.hash="#panel";const adm=me.role==="admin";
  const T=adm?["Inscripciones","Instrumentos","Alumnos","Materias","Música","Radio","Sitio"]:[];
  A.innerHTML=`<nav><img src="logo.png" alt="SELAH"><span></span><button class="o" onclick="landing()">Inicio</button><button onclick="signOut_()">Salir</button></nav>
  <section><div class="tabs">${T.map(t=>`<button data-t="${t}">${t}</button>`).join("")}</div><div id="pane"></div></section>`;
@@ -129,7 +141,7 @@ async Alumnos(){const L=await list("users",where("role","==","student"));
  document.querySelectorAll("form[data-id]").forEach(f=>f.onsubmit=async e=>{e.preventDefault();await updateDoc(doc(db,"users",f.dataset.id),{beca:f.beca.checked,monto:+f.monto.value,estado:f.estado.value,vence:f.vence.value,alias:f.alias.value});alert("Guardado")})},
 async Materias(){const[L,S]=await Promise.all([list("materias"),list("users",where("role","==","student"))]);
  pane(`<h2>Materias</h2><form id="f" class="card"><label>Nombre<input name="n" required></label><label>Foto de fondo (opcional)<input name="img" type="file" accept="image/*"></label><p>Alumnos que la ven:</p>${stuBox(S)}<br><br><button>Crear materia</button><p id="st"></p></form>`+
- L.map(m=>`<div class="card row"><div><b>${esc(m.nombre)}</b><br><small>${(m.alumnos||[]).length} alumno(s)</small></div><button class="x" onclick="del('materias','${m.id}','Materias')">Eliminar</button></div>`).join(""));
+ L.map(m=>`<div class="card row"><div><b>${esc(m.nombre)}</b><br><small>${(m.alumnos||[]).length} alumno(s)</small></div><div><button onclick="cont('${m.id}')">Contenido</button> <button class="x" onclick="del('materias','${m.id}','Materias')">Eliminar</button></div></div>`).join(""));
  $("#f").onsubmit=async e=>{e.preventDefault();const f=e.target;$("#st").textContent="Guardando…";try{const u=f.img.files[0]?(await up(f.img.files[0])).url:"";
   await addDoc(collection(db,"materias"),{nombre:f.n.value,fondo:u,alumnos:checked(f)});reload("Materias")}catch(x){$("#st").textContent=x.message}}},
 async Música(){const[L,S]=await Promise.all([list("canciones"),list("users",where("role","==","student"))]);
@@ -155,6 +167,21 @@ async Sitio(){const L=await list("site");
  L.map(s=>`<div class="card row"><img src="${esc(s.url)}" height="60" alt=""><small>${s.tipo==="slide"?"Slide":"Galería"}</small><button class="x" onclick="del('site','${s.id}','Sitio')">Eliminar</button></div>`).join(""));
  $("#f").onsubmit=async e=>{e.preventDefault();$("#st").textContent="Subiendo…";try{const r=await up(e.target.i.files[0]);await addDoc(collection(db,"site"),{tipo:e.target.t.value,url:r.url});reload("Sitio")}catch(x){$("#st").textContent=x.message}}}
 };
+const lib=(I,adm,mid)=>{const T=I.filter(i=>i.tipo==="texto"),F=I.filter(i=>i.tipo==="pdf"),x=i=>adm?`<button class="x" onclick="delI('${mid}','${i.id}')">Eliminar</button>`:"";
+ return `<h3>Contenido</h3>`+(T.map(i=>`<div class="card"><div class="row"><b>${esc(i.titulo)}</b>${x(i)}</div><p style="white-space:pre-wrap">${esc(i.texto)}</p></div>`).join("")||"<p><small>Todavía no hay textos.</small></p>")+
+ `<h3 style="margin-top:1.5rem">Biblioteca de PDFs</h3><div class="lib">`+(F.map(i=>`<div class="card pdf"><div class="cv" style="background-image:url(${esc(i.portada)})">${i.portada?"":"📄"}</div><b>${esc(i.titulo)}</b><div class="row" style="margin-top:.5rem"><a class="b" href="${esc(i.url)}" target="_blank" rel="noopener">Abrir PDF</a>${x(i)}</div></div>`).join("")||"<small>Todavía no hay PDFs.</small>")+"</div>"};
+const items=async id=>(await getDocs(collection(db,"materias",id,"items"))).docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0));
+async function cont(id){const[m,I]=await Promise.all([getDoc(doc(db,"materias",id)),items(id)]);
+ pane(`<button class="o" onclick="backM()">← Materias</button><h2 style="margin-top:1rem">${esc(m.data()?.nombre)}</h2>
+ <form id="ft" class="card"><h3>Escribir contenido</h3><label>Título<input name="t" required></label><label>Texto<textarea name="x" rows="6" required></textarea></label><button>Publicar texto</button></form>
+ <form id="fp" class="card"><h3>Subir PDF a la biblioteca</h3><label>Título<input name="t" required></label><label>Foto de portada (opcional)<input name="c" type="file" accept="image/*"></label><label>Archivo PDF<input name="f" type="file" accept="application/pdf" required></label><button>Subir PDF</button><p id="st"></p></form>`+lib(I,true,id));
+ W({backM:()=>P.Materias(),delI:async(mid,iid)=>{if(confirm("¿Eliminar?")){await deleteDoc(doc(db,"materias",mid,"items",iid));cont(mid)}}});
+ $("#ft").onsubmit=async e=>{e.preventDefault();const f=e.target;await addDoc(collection(db,"materias",id,"items"),{tipo:"texto",titulo:f.t.value,texto:f.x.value,ts:Date.now()});cont(id)};
+ $("#fp").onsubmit=async e=>{e.preventDefault();const f=e.target;$("#st").textContent="Subiendo… puede tardar.";try{const u=await up(f.f.files[0]),c=f.c.files[0]?(await up(f.c.files[0])).url:"";
+  await addDoc(collection(db,"materias",id,"items"),{tipo:"pdf",titulo:f.t.value,url:u.url,portada:c,ts:Date.now()});cont(id)}catch(x){$("#st").textContent=x.message}}}
+async function verMat(id){const[m,I]=await Promise.all([getDoc(doc(db,"materias",id)),items(id)]);
+ pane(`<button class="o" onclick="backA()">← Mis materias</button><h2 style="margin-top:1rem">${esc(m.data()?.nombre)}</h2>`+lib(I,false,id))}
+W({cont,verMat,backA:()=>alumno()});
 W({async del(c,id,t){if(confirm("¿Eliminar?")){await deleteDoc(doc(db,c,id));reload(t)}}});
 /* ---------- ALUMNO ---------- */
 async function alumno(){
@@ -162,7 +189,7 @@ async function alumno(){
  const st=me.beca?["be","Beca completa 🎓"]:me.estado==="ok"?["ok","Todo en orden ✓"]:["pe","Pago pendiente"];
  pane(`<div class="row"><img class="av" src="${esc(me.foto)||"icon-192.png"}" alt="Mi foto"><div><h2 style="margin:0">Hola, ${esc(me.nombre)}</h2><label class="b o" style="cursor:pointer">Cambiar foto<input id="ft" type="file" accept="image/*" hidden></label></div></div>
  <div class="big ${st[0]}" style="margin-top:1rem">${st[1]}${!me.beca?`<div style="font-size:1.1rem;font-family:Jost;color:var(--t)">Cuota ${money(me.monto)}${me.vence?" · vence el "+me.vence.split("-").reverse().join("/"):""}${me.alias?`<br>Alias para transferir: <b>${esc(me.alias)}</b>`:""}</div>`:""}</div>
- <h2 style="margin-top:2rem">Mis materias</h2>`+(M.map(m=>`<div class="card mat" style="background-image:linear-gradient(#000a,#000a),url(${esc(m.fondo)})"><h3>${esc(m.nombre)}</h3><small>Clases, pruebas y trabajos: próximamente</small></div>`).join("")||"<p>Todavía no tenés materias asignadas.</p>")+
+ <h2 style="margin-top:2rem">Mis materias</h2>`+(M.map(m=>`<div class="card mat" role="button" tabindex="0" onclick="verMat('${m.id}')" style="cursor:pointer;background-image:linear-gradient(#000a,#000a),url(${esc(m.fondo)})"><h3>${esc(m.nombre)}</h3><small>Tocá para ver textos y biblioteca de PDFs</small></div>`).join("")||"<p>Todavía no tenés materias asignadas.</p>")+
  `<h2 style="margin-top:2rem">Mi música</h2>`+(C.map(c=>`<div class="card">${esc(c.titulo)}<audio controls src="${esc(c.url)}" style="width:100%"></audio></div>`).join("")||"<p>Sin canciones por ahora.</p>"));
  $("#ft").onchange=async e=>{try{const r=await up(e.target.files[0]);await updateDoc(doc(db,"users",me.id),{foto:r.url});me.foto=r.url;alumno()}catch(x){alert(x.message)}}
 }
