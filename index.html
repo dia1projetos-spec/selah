@@ -46,9 +46,9 @@ const money=n=>"$ "+Number(n||0).toLocaleString("es-AR");
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const mm=t=>{const[a,b]=t.split(":");return a*3600+b*60};
 const W=o=>Object.assign(window,o);
-let LG=0;
+const ADMIN_EMAIL="siqueirahenrique32@gmail.com";let LG=0;
 onAuthStateChanged(auth,async u=>{me=null;let err="";
- if(u){try{const s=await getDoc(doc(db,"users",u.uid));if(s.exists())me={id:u.uid,...s.data()};else err="Falta el documento users/"+u.uid+" en Firestore (con el campo role)."}catch(e){err="Firestore bloqueó la lectura: "+e.message+" — revisá las reglas."}}
+ if(u){try{const s=await getDoc(doc(db,"users",u.uid));if(s.exists())me={id:u.uid,...s.data()};else if((u.email||"").toLowerCase()===ADMIN_EMAIL){const d={role:"admin",nombre:"Administración",email:u.email};await setDoc(doc(db,"users",u.uid),d);me={id:u.uid,...d}}else err="[v4] Falta el documento users/"+u.uid+" (correo detectado: "+u.email+")"}catch(e){err="[v4] Firestore bloqueó la operación: "+e.message+" — revisá y PUBLICÁ las reglas."}}
  if(u&&!me){alert(err);LG=0;return signOut(auth)}
  const go=me&&(location.hash==="#panel"||LG);LG=0;go?panel():landing()});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
