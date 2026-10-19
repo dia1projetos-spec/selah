@@ -34,7 +34,7 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-ap
 import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,createUserWithEmailAndPassword}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import{getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,query,where}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const cfg={apiKey:"AIzaSyCJQ3-MBQ749r2TIOLeCDjVsZDXT7M1ZJo",authDomain:"selah-23ee2.firebaseapp.com",projectId:"selah-23ee2",storageBucket:"selah-23ee2.firebasestorage.app",messagingSenderId:"851173824803",appId:"1:851173824803:web:02fcf7f6b6a91e60071496"};
-const CLOUD="TU_CLOUD_NAME",PRESET="selah_unsigned"; // ← completá estos dos (ver instrucciones)
+const CLOUD="dkolr7kmt",PRESET="selah"; // ← completá estos dos (ver instrucciones)
 const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
 const $=s=>document.querySelector(s),A=$("#app");let me=null;
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
