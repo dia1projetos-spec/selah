@@ -1,0 +1,167 @@
+<!doctype html><html lang="es-AR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SELAH · Escuela de Música</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0a0806">
+<link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0806;--s:#16120d;--g:#d9a441;--g2:#f3d48a;--t:#f4ecdc;--m:#a39880;--ok:#3ecf8e;--no:#ff6b5b}
+*{box-sizing:border-box;margin:0}body{background:var(--bg);color:var(--t);font:16px/1.6 Jost,sans-serif}
+h1,h2,h3{font-family:'Cormorant Garamond',serif;font-weight:700;line-height:1.1;color:var(--g2)}h2{font-size:2.4rem;margin-bottom:1rem}
+img{max-width:100%}a{color:var(--g)}
+nav{position:fixed;inset:0 0 auto;z-index:9;display:flex;align-items:center;gap:1rem;padding:.6rem 1.2rem;background:#0a0806d9;backdrop-filter:blur(8px)}
+nav img{height:44px}nav span{flex:1}nav a{text-decoration:none;color:var(--t)}
+button,.b{background:linear-gradient(135deg,var(--g2),var(--g));color:#1a1206;border:0;border-radius:999px;padding:.6rem 1.3rem;font:500 1rem Jost;cursor:pointer;text-decoration:none;display:inline-block}
+button.o{background:none;border:1px solid var(--g);color:var(--g2)}button.x{background:none;color:var(--no);padding:.2rem .6rem}
+:focus-visible{outline:2px solid var(--g2);outline-offset:2px}
+.hero{height:100vh;min-height:520px;position:relative;display:grid;place-items:center;text-align:center;overflow:hidden;background:radial-gradient(circle at 50% 40%,#2a1f0d,var(--bg) 70%)}
+.hero .sl{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.2s}.hero .sl.on{opacity:.45}
+.hero div.c{position:relative;padding:1rem}.hero img{width:min(380px,70vw)}.hero p{color:var(--m);margin:.5rem 0 1.4rem}
+section{padding:4rem 1.2rem;max-width:1000px;margin:auto}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.6rem}.gal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px}
+.card{background:var(--s);border:1px solid #2c2315;border-radius:10px;padding:1rem;margin:.6rem 0}
+input,select{width:100%;background:#0f0c08;color:var(--t);border:1px solid #3a2e19;border-radius:8px;padding:.6rem;margin:.3rem 0 .8rem;font:inherit}
+label.ck{display:inline-flex;gap:.4rem;align-items:center;margin:.2rem .8rem .2rem 0}label.ck input{width:auto;margin:0}
+.radio{display:flex;gap:1rem;align-items:center}.radio button{width:64px;height:64px;font-size:1.6rem;padding:0}
+.modal{position:fixed;inset:0;background:#000c;z-index:20;display:grid;place-items:center;padding:1rem}.modal .card{width:min(380px,100%)}
+.tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin:5rem 0 1rem}.tabs button{padding:.4rem 1rem}.tabs .on{background:var(--g);color:#1a1206}
+.big{font-family:'Cormorant Garamond';font-size:3rem;text-align:center;padding:1.5rem;border-radius:14px;font-weight:700}
+.big.ok{background:#12261d;color:var(--ok)}.big.pe{background:#2b1512;color:var(--no)}.big.be{background:#2a2110;color:var(--g2)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap}.av{width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--g)}
+.mat{min-height:120px;background-size:cover;background-position:center}small{color:var(--m)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body><div id="app"></div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,createUserWithEmailAndPassword}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import{getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,query,where}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const cfg={apiKey:"AIzaSyCJQ3-MBQ749r2TIOLeCDjVsZDXT7M1ZJo",authDomain:"selah-23ee2.firebaseapp.com",projectId:"selah-23ee2",storageBucket:"selah-23ee2.firebasestorage.app",messagingSenderId:"851173824803",appId:"1:851173824803:web:02fcf7f6b6a91e60071496"};
+const CLOUD="TU_CLOUD_NAME",PRESET="selah_unsigned"; // ← completá estos dos (ver instrucciones)
+const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
+const $=s=>document.querySelector(s),A=$("#app");let me=null;
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const list=async(c,...q)=>(await getDocs(query(collection(db,c),...q))).docs.map(d=>({id:d.id,...d.data()}));
+const up=async f=>{const fd=new FormData();fd.append("file",f);fd.append("upload_preset",PRESET);
+ const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`,{method:"POST",body:fd}),j=await r.json();
+ if(!j.secure_url)throw Error(j.error?.message||"Error al subir");return{url:j.secure_url,dur:Math.round(j.duration||0)}};
+const money=n=>"$ "+Number(n||0).toLocaleString("es-AR");
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const mm=t=>{const[a,b]=t.split(":");return a*3600+b*60};
+const W=o=>Object.assign(window,o);
+onAuthStateChanged(auth,async u=>{me=null;if(u){const s=await getDoc(doc(db,"users",u.uid));if(s.exists())me={id:u.uid,...s.data()}}
+ location.hash==="#panel"&&me?panel():landing()});
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
+let ev;addEventListener("beforeinstallprompt",e=>{e.preventDefault();ev=e;$("#inst")?.removeAttribute("hidden")});
+
+/* ---------- LANDING ---------- */
+async function landing(){
+ location.hash="";
+ A.innerHTML=`<nav><img src="logo.png" alt="SELAH"><span></span><a href="#insc" onclick="document.getElementById('insc').scrollIntoView()">Inscribite</a>
+ <button id="inst" class="o" hidden onclick="ev2()">Instalar app</button><button onclick="loginM()">${me?"Mi panel":"Ingresar"}</button></nav>
+ <header class="hero" id="hero"><div class="c"><img src="logo.png" alt="SELAH Escuela de Música"><p>Aprendé música en comunidad. Clases, instrumentos y mucho oído.</p>
+ <a class="b" href="#insc" onclick="document.getElementById('insc').scrollIntoView()">Quiero inscribirme</a></div></header>
+ <section><h2>Radio SELAH</h2><div class="card radio"><button id="pl" aria-label="Reproducir">▶</button><div><b id="rt">Radio interna de la escuela</b><br><small id="rs">Tocá play para escuchar lo que está sonando ahora.</small></div><audio id="au"></audio></div></section>
+ <section><h2>Galería</h2><div class="gal" id="gal"><small>Pronto vas a ver fotos de nuestras clases.</small></div></section>
+ <section id="insc"><h2>Inscripción</h2><div class="card"><form id="fi"><label>Nombre completo<input name="n" required></label>
+ <label>Edad<input name="e" type="number" min="3" max="99" required></label><label>WhatsApp (con código de área)<input name="w" type="tel" required></label>
+ <p>¿Qué instrumentos te interesan?</p><div id="ins"><small>Cargando…</small></div><br><button>Enviar inscripción</button><p id="fm"></p></form></div></section>`;
+ W({ev2:()=>ev?.prompt(),loginM});
+ const[site,ins]=await Promise.all([list("site"),list("instrumentos")]);
+ const sl=site.filter(s=>s.tipo==="slide");$("#hero").insertAdjacentHTML("afterbegin",sl.map((s,i)=>`<div class="sl${i?"":" on"}" style="background-image:url(${esc(s.url)})"></div>`).join(""));
+ if(sl.length>1){let i=0;setInterval(()=>{const x=document.querySelectorAll(".sl");x[i].classList.remove("on");i=(i+1)%x.length;x[i].classList.add("on")},5000)}
+ const g=site.filter(s=>s.tipo==="gal");if(g.length)$("#gal").innerHTML=g.map(s=>`<img loading="lazy" src="${esc(s.url)}" alt="Foto de SELAH">`).join("");
+ $("#ins").innerHTML=ins.map(i=>`<label class="ck"><input type="checkbox" value="${esc(i.nombre)}">${esc(i.nombre)}</label>`).join("")||"<small>Consultanos por los instrumentos disponibles.</small>";
+ $("#fi").onsubmit=async e=>{e.preventDefault();const f=e.target;
+  try{await addDoc(collection(db,"inscripciones"),{nombre:f.n.value,edad:+f.e.value,whatsapp:f.w.value,instrumentos:[...f.querySelectorAll("#ins input:checked")].map(x=>x.value),estado:"pendiente",fecha:today()});
+  f.reset();$("#fm").textContent="¡Listo! Recibimos tu inscripción. Te escribimos por WhatsApp."}catch{$("#fm").textContent="No pudimos enviar. Probá de nuevo."}};
+ radio();
+}
+function loginM(){
+ if(me){location.hash="#panel";return panel()}
+ document.body.insertAdjacentHTML("beforeend",`<div class="modal" id="lm"><form class="card" id="lf"><h3>Ingresar</h3><label>Correo<input type="email" name="m" required></label>
+ <label>Contraseña<input type="password" name="p" required></label><div class="row"><button>Entrar</button><button type="button" class="o" onclick="lm.remove()">Cancelar</button></div><p id="le" style="color:var(--no)"></p></form></div>`);
+ $("#lf").onsubmit=async e=>{e.preventDefault();try{await signInWithEmailAndPassword(auth,e.target.m.value,e.target.p.value);location.hash="#panel"}catch{$("#le").textContent="Correo o contraseña incorrectos."}}
+}
+/* ---------- RADIO ---------- */
+async function radio(){
+ const au=$("#au"),pl=$("#pl");let on=false;
+ async function tune(){
+  const s=await getDoc(doc(db,"radio",today()));const L=s.exists()?s.data().slots:[];const n=new Date(),now=n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
+  const c=L.find(x=>mm(x.inicio)<=now&&now<mm(x.inicio)+x.dur);
+  if(!c){$("#rt").textContent="Sin programación en este momento";$("#rs").textContent="Volvé más tarde.";au.pause();setTimeout(()=>on&&tune(),60000);return}
+  $("#rt").textContent=c.titulo;$("#rs").textContent="Sonando ahora en SELAH";au.src=c.url;
+  au.onloadedmetadata=()=>{au.currentTime=Math.min(now-mm(c.inicio),au.duration||0);au.play()};au.onended=()=>on&&tune()}
+ pl.onclick=()=>{on=!on;pl.textContent=on?"❚❚":"▶";on?tune():au.pause()}
+}
+/* ---------- PANEL ---------- */
+function panel(){
+ location.hash="#panel";const adm=me.role==="admin";
+ const T=adm?["Inscripciones","Instrumentos","Alumnos","Materias","Música","Radio","Sitio"]:[];
+ A.innerHTML=`<nav><img src="logo.png" alt="SELAH"><span></span><button class="o" onclick="landing()">Inicio</button><button onclick="signOut_()">Salir</button></nav>
+ <section><div class="tabs">${T.map(t=>`<button data-t="${t}">${t}</button>`).join("")}</div><div id="pane"></div></section>`;
+ W({landing,signOut_:()=>signOut(auth).then(()=>{me=null;landing()})});
+ document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on"));b.classList.add("on");P[b.dataset.t]()});
+ adm?P.Inscripciones():alumno();
+}
+const pane=h=>$("#pane").innerHTML=h;
+const reload=t=>P[t]();
+const stuBox=(all,sel=[])=>all.map(u=>`<label class="ck"><input type="checkbox" name="al" value="${u.id}" ${sel.includes(u.id)?"checked":""}>${esc(u.nombre)}</label>`).join("")||"<small>Todavía no hay alumnos aprobados.</small>";
+const checked=f=>[...f.querySelectorAll("[name=al]:checked")].map(x=>x.value);
+const P={
+async Inscripciones(){const L=await list("inscripciones",where("estado","==","pendiente"));
+ pane(`<h2>Inscripciones</h2>`+(L.map(i=>`<div class="card row"><div><b>${esc(i.nombre)}</b>, ${i.edad} años<br><small>${esc(i.whatsapp)} · ${esc((i.instrumentos||[]).join(", "))||"sin instrumento"}</small></div>
+ <div><button onclick="apr('${i.id}')">Aprobar</button> <button class="x" onclick="rec('${i.id}')">Rechazar</button></div></div>`).join("")||"<p>No hay inscripciones pendientes.</p>"));
+ W({async apr(id){const i=L.find(x=>x.id===id),m=prompt("Correo del alumno para su acceso:"),p=m&&prompt("Contraseña inicial (mín. 6 caracteres):");if(!p)return;
+  try{const s=getAuth(initializeApp(cfg,"sec"+Date.now())),c=await createUserWithEmailAndPassword(s,m,p);await signOut(s);
+  await setDoc(doc(db,"users",c.user.uid),{role:"student",nombre:i.nombre,edad:i.edad,whatsapp:i.whatsapp,instrumentos:i.instrumentos||[],email:m,beca:false,monto:0,estado:"pendiente",vence:"",alias:"",foto:""});
+  await updateDoc(doc(db,"inscripciones",id),{estado:"aprobada"});reload("Inscripciones")}catch(e){alert("No se pudo crear: "+e.message)}},
+  async rec(id){await updateDoc(doc(db,"inscripciones",id),{estado:"rechazada"});reload("Inscripciones")}})},
+async Instrumentos(){const L=await list("instrumentos");
+ pane(`<h2>Instrumentos</h2><form id="f" class="row"><input name="n" placeholder="Ej: Guitarra" required style="flex:1"><button>Agregar</button></form>`+L.map(i=>`<div class="card row">${esc(i.nombre)}<button class="x" onclick="del('instrumentos','${i.id}','Instrumentos')">Eliminar</button></div>`).join(""));
+ $("#f").onsubmit=async e=>{e.preventDefault();await addDoc(collection(db,"instrumentos"),{nombre:e.target.n.value});reload("Instrumentos")}},
+async Alumnos(){const L=await list("users",where("role","==","student"));
+ pane(`<h2>Alumnos</h2>`+L.map(u=>`<form class="card" data-id="${u.id}"><b>${esc(u.nombre)}</b> <small>${esc(u.email)}</small>
+ <label class="ck"><input type="checkbox" name="beca" ${u.beca?"checked":""}>Beca (estudia gratis)</label>
+ <label>Valor de la cuota<input name="monto" type="number" value="${u.monto||0}"></label>
+ <label>Situación<select name="estado"><option value="ok" ${u.estado==="ok"?"selected":""}>Al día</option><option value="pendiente" ${u.estado!=="ok"?"selected":""}>Pendiente</option></select></label>
+ <label>Vencimiento de la factura<input name="vence" type="date" value="${u.vence||""}"></label><label>Alias para el pago<input name="alias" value="${esc(u.alias)}"></label><button>Guardar</button></form>`).join("")||"<p>Aún no hay alumnos aprobados.</p>");
+ document.querySelectorAll("form[data-id]").forEach(f=>f.onsubmit=async e=>{e.preventDefault();await updateDoc(doc(db,"users",f.dataset.id),{beca:f.beca.checked,monto:+f.monto.value,estado:f.estado.value,vence:f.vence.value,alias:f.alias.value});alert("Guardado")})},
+async Materias(){const[L,S]=await Promise.all([list("materias"),list("users",where("role","==","student"))]);
+ pane(`<h2>Materias</h2><form id="f" class="card"><label>Nombre<input name="n" required></label><label>Foto de fondo (opcional)<input name="img" type="file" accept="image/*"></label><p>Alumnos que la ven:</p>${stuBox(S)}<br><br><button>Crear materia</button><p id="st"></p></form>`+
+ L.map(m=>`<div class="card row"><div><b>${esc(m.nombre)}</b><br><small>${(m.alumnos||[]).length} alumno(s)</small></div><button class="x" onclick="del('materias','${m.id}','Materias')">Eliminar</button></div>`).join(""));
+ $("#f").onsubmit=async e=>{e.preventDefault();const f=e.target;$("#st").textContent="Guardando…";try{const u=f.img.files[0]?(await up(f.img.files[0])).url:"";
+  await addDoc(collection(db,"materias"),{nombre:f.n.value,fondo:u,alumnos:checked(f)});reload("Materias")}catch(x){$("#st").textContent=x.message}}},
+async Música(){const[L,S]=await Promise.all([list("canciones"),list("users",where("role","==","student"))]);
+ pane(`<h2>Música</h2><form id="f" class="card"><label>Título<input name="n" required></label><label>Archivo de audio<input name="a" type="file" accept="audio/*" required></label><p>Destinar a:</p>${stuBox(S)}<br><br><button>Subir canción</button><p id="st"></p></form>`+
+ L.map(c=>`<div class="card row"><div>${esc(c.titulo)} <small>${Math.floor(c.dur/60)}:${String(c.dur%60).padStart(2,"0")}</small></div><button class="x" onclick="del('canciones','${c.id}','Música')">Eliminar</button></div>`).join(""));
+ $("#f").onsubmit=async e=>{e.preventDefault();const f=e.target;$("#st").textContent="Subiendo… puede tardar.";try{const r=await up(f.a.files[0]);
+  await addDoc(collection(db,"canciones"),{titulo:f.n.value,url:r.url,dur:r.dur,para:checked(f)});reload("Música")}catch(x){$("#st").textContent=x.message}}},
+async Radio(){const C=await list("canciones");let d=today(),slots=[];
+ const load=async()=>{const s=await getDoc(doc(db,"radio",d));slots=s.exists()?s.data().slots:[];draw()};
+ const draw=()=>{slots.sort((a,b)=>mm(a.inicio)-mm(b.inicio));const tot=slots.reduce((s,x)=>s+x.dur,0);
+  $("#sl").innerHTML=slots.map((x,i)=>`<div class="card row"><div><b>${x.inicio}</b> · ${esc(x.titulo)} <small>${Math.round(x.dur/60)} min</small></div><button class="x" onclick="rm(${i})">Quitar</button></div>`).join("")||"<p>Este día no tiene música todavía.</p>";
+  $("#tt").textContent=`Programado: ${Math.floor(tot/3600)} h ${Math.round(tot%3600/60)} min de 24 h`};
+ pane(`<h2>Radio</h2><div class="card"><label>Día<input type="date" id="dd" value="${d}"></label><form id="f"><label>Canción<select name="c">${C.map(c=>`<option value="${c.id}">${esc(c.titulo)}</option>`).join("")}</select></label>
+ <label>Hora de inicio<input type="time" name="h" required></label><button>Agregar al horario</button></form></div><p id="tt"></p><div id="sl"></div><button id="sv">Guardar el día</button>`);
+ $("#dd").onchange=e=>{d=e.target.value;load()};
+ $("#f").onsubmit=e=>{e.preventDefault();const c=C.find(x=>x.id===e.target.c.value);if(!c)return;slots.push({inicio:e.target.h.value,titulo:c.titulo,url:c.url,dur:c.dur||180});draw()};
+ W({rm:i=>{slots.splice(i,1);draw()}});
+ $("#sv").onclick=async()=>{await setDoc(doc(db,"radio",d),{slots});alert("Día guardado")};
+ for(const o of await list("radio"))if(o.id<today())deleteDoc(doc(db,"radio",o.id)); // limpieza automática de días pasados
+ load()},
+async Sitio(){const L=await list("site");
+ pane(`<h2>Sitio</h2><form id="f" class="card"><label>Tipo<select name="t"><option value="slide">Imagen del encabezado (slide)</option><option value="gal">Foto de la galería</option></select></label><label>Imagen<input name="i" type="file" accept="image/*" required></label><button>Subir</button><p id="st"></p></form>`+
+ L.map(s=>`<div class="card row"><img src="${esc(s.url)}" height="60" alt=""><small>${s.tipo==="slide"?"Slide":"Galería"}</small><button class="x" onclick="del('site','${s.id}','Sitio')">Eliminar</button></div>`).join(""));
+ $("#f").onsubmit=async e=>{e.preventDefault();$("#st").textContent="Subiendo…";try{const r=await up(e.target.i.files[0]);await addDoc(collection(db,"site"),{tipo:e.target.t.value,url:r.url});reload("Sitio")}catch(x){$("#st").textContent=x.message}}}
+};
+W({async del(c,id,t){if(confirm("¿Eliminar?")){await deleteDoc(doc(db,c,id));reload(t)}}});
+/* ---------- ALUMNO ---------- */
+async function alumno(){
+ const[M,C]=await Promise.all([list("materias",where("alumnos","array-contains",me.id)),list("canciones",where("para","array-contains",me.id))]);
+ const st=me.beca?["be","Beca completa 🎓"]:me.estado==="ok"?["ok","Todo en orden ✓"]:["pe","Pago pendiente"];
+ pane(`<div class="row"><img class="av" src="${esc(me.foto)||"icon-192.png"}" alt="Mi foto"><div><h2 style="margin:0">Hola, ${esc(me.nombre)}</h2><label class="b o" style="cursor:pointer">Cambiar foto<input id="ft" type="file" accept="image/*" hidden></label></div></div>
+ <div class="big ${st[0]}" style="margin-top:1rem">${st[1]}${!me.beca?`<div style="font-size:1.1rem;font-family:Jost;color:var(--t)">Cuota ${money(me.monto)}${me.vence?" · vence el "+me.vence.split("-").reverse().join("/"):""}${me.alias?`<br>Alias para transferir: <b>${esc(me.alias)}</b>`:""}</div>`:""}</div>
+ <h2 style="margin-top:2rem">Mis materias</h2>`+(M.map(m=>`<div class="card mat" style="background-image:linear-gradient(#000a,#000a),url(${esc(m.fondo)})"><h3>${esc(m.nombre)}</h3><small>Clases, pruebas y trabajos: próximamente</small></div>`).join("")||"<p>Todavía no tenés materias asignadas.</p>")+
+ `<h2 style="margin-top:2rem">Mi música</h2>`+(C.map(c=>`<div class="card">${esc(c.titulo)}<audio controls src="${esc(c.url)}" style="width:100%"></audio></div>`).join("")||"<p>Sin canciones por ahora.</p>"));
+ $("#ft").onchange=async e=>{try{const r=await up(e.target.files[0]);await updateDoc(doc(db,"users",me.id),{foto:r.url});me.foto=r.url;alumno()}catch(x){alert(x.message)}}
+}
+W({landing});
+</script></body></html>
