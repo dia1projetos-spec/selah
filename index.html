@@ -9,7 +9,7 @@ h1,h2,h3{font-family:'Cormorant Garamond',serif;font-weight:700;line-height:1.1;
 img{max-width:100%}a{color:var(--g)}
 nav{position:fixed;inset:0 0 auto;z-index:9;display:flex;align-items:center;gap:1rem;padding:.6rem 1.2rem;background:#0a0806d9;backdrop-filter:blur(8px)}
 nav img{height:44px}nav span{flex:1}nav a{text-decoration:none;color:var(--t)}
-button,.b{background:linear-gradient(135deg,var(--g2),var(--g));color:#1a1206;border:0;border-radius:999px;padding:.6rem 1.3rem;font:500 1rem Jost;cursor:pointer;text-decoration:none;display:inline-block}
+button,.b{white-space:nowrap;background:linear-gradient(135deg,var(--g2),var(--g));color:#1a1206;border:0;border-radius:999px;padding:.6rem 1.3rem;font:500 1rem Jost;cursor:pointer;text-decoration:none;display:inline-block}
 button.o{background:none;border:1px solid var(--g);color:var(--g2)}button.x{background:none;color:var(--no);padding:.2rem .6rem}
 :focus-visible{outline:2px solid var(--g2);outline-offset:2px}
 .hero{height:100vh;min-height:520px;position:relative;display:grid;place-items:center;text-align:center;overflow:hidden;background:radial-gradient(circle at 50% 40%,#2a1f0d,var(--bg) 70%)}
@@ -46,8 +46,11 @@ const money=n=>"$ "+Number(n||0).toLocaleString("es-AR");
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const mm=t=>{const[a,b]=t.split(":");return a*3600+b*60};
 const W=o=>Object.assign(window,o);
-onAuthStateChanged(auth,async u=>{me=null;if(u){const s=await getDoc(doc(db,"users",u.uid));if(s.exists())me={id:u.uid,...s.data()}}
- location.hash==="#panel"&&me?panel():landing()});
+let LG=0;
+onAuthStateChanged(auth,async u=>{me=null;let err="";
+ if(u){try{const s=await getDoc(doc(db,"users",u.uid));if(s.exists())me={id:u.uid,...s.data()};else err="Falta el documento users/"+u.uid+" en Firestore (con el campo role)."}catch(e){err="Firestore bloqueó la lectura: "+e.message+" — revisá las reglas."}}
+ if(u&&!me){alert(err);LG=0;return signOut(auth)}
+ const go=me&&(location.hash==="#panel"||LG);LG=0;go?panel():landing()});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
 let ev;addEventListener("beforeinstallprompt",e=>{e.preventDefault();ev=e;$("#inst")?.removeAttribute("hidden")});
 
@@ -78,7 +81,7 @@ function loginM(){
  if(me){location.hash="#panel";return panel()}
  document.body.insertAdjacentHTML("beforeend",`<div class="modal" id="lm"><form class="card" id="lf"><h3>Ingresar</h3><label>Correo<input type="email" name="m" required></label>
  <label>Contraseña<input type="password" name="p" required></label><div class="row"><button>Entrar</button><button type="button" class="o" onclick="lm.remove()">Cancelar</button></div><p id="le" style="color:var(--no)"></p></form></div>`);
- $("#lf").onsubmit=async e=>{e.preventDefault();try{await signInWithEmailAndPassword(auth,e.target.m.value,e.target.p.value);location.hash="#panel"}catch{$("#le").textContent="Correo o contraseña incorrectos."}}
+ $("#lf").onsubmit=async e=>{e.preventDefault();try{LG=1;await signInWithEmailAndPassword(auth,e.target.m.value,e.target.p.value)}catch(x){LG=0;$("#le").textContent=x.code==="auth/operation-not-allowed"?"Falta activar Correo/contraseña en Firebase Authentication.":x.code==="auth/network-request-failed"?"Sin conexión.":"Correo o contraseña incorrectos ("+x.code+")."}}
 }
 /* ---------- RADIO ---------- */
 async function radio(){
