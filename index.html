@@ -109,7 +109,7 @@ async function radio(){
 /* ---------- PANEL ---------- */
 function panel(){
  document.getElementById("lm")?.remove();location.hash="#panel";const adm=me.role==="admin";
- const T=adm?["Inscripciones","Instrumentos","Alumnos","Materias","Música","Radio","Sitio"]:[];
+ const T=adm?["Inscripciones","Instrumentos","Alumnos","Materias","Exámenes","Música","Radio","Sitio"]:[];
  A.innerHTML=`<nav><img src="logo.png" alt="SELAH"><span></span><button class="o" onclick="landing()">Inicio</button><button onclick="signOut_()">Salir</button></nav>
  <section><div class="tabs">${T.map(t=>`<button data-t="${t}">${t}</button>`).join("")}</div><div id="pane"></div></section>`;
  W({landing,signOut_:()=>signOut(auth).then(()=>{me=null;landing()})});
@@ -167,30 +167,73 @@ async Sitio(){const L=await list("site");
  L.map(s=>`<div class="card row"><img src="${esc(s.url)}" height="60" alt=""><small>${s.tipo==="slide"?"Slide":"Galería"}</small><button class="x" onclick="del('site','${s.id}','Sitio')">Eliminar</button></div>`).join(""));
  $("#f").onsubmit=async e=>{e.preventDefault();$("#st").textContent="Subiendo…";try{const r=await up(e.target.i.files[0]);await addDoc(collection(db,"site"),{tipo:e.target.t.value,url:r.url});reload("Sitio")}catch(x){$("#st").textContent=x.message}}}
 };
-const lib=(I,adm,mid)=>{const T=I.filter(i=>i.tipo==="texto"),F=I.filter(i=>i.tipo==="pdf"),x=i=>adm?`<button class="x" onclick="delI('${mid}','${i.id}')">Eliminar</button>`:"";
+const lib=(I,adm,mid)=>{const T=I.filter(i=>i.tipo==="texto"),F=I.filter(i=>i.tipo==="pdf"),V=I.filter(i=>i.tipo==="video"),x=i=>adm?`<button class="x" onclick="delI('${mid}','${i.id}')">Eliminar</button>`:"";
  return `<h3>Contenido</h3>`+(T.map(i=>`<div class="card"><div class="row"><b>${esc(i.titulo)}</b>${x(i)}</div><p style="white-space:pre-wrap">${esc(i.texto)}</p></div>`).join("")||"<p><small>Todavía no hay textos.</small></p>")+
- `<h3 style="margin-top:1.5rem">Biblioteca de PDFs</h3><div class="lib">`+(F.map(i=>`<div class="card pdf"><div class="cv" style="background-image:url(${esc(i.portada)})">${i.portada?"":"📄"}</div><b>${esc(i.titulo)}</b><div class="row" style="margin-top:.5rem"><a class="b" href="${esc(i.url)}" target="_blank" rel="noopener">Abrir PDF</a>${x(i)}</div></div>`).join("")||"<small>Todavía no hay PDFs.</small>")+"</div>"};
+ (V.length?`<h3 style="margin-top:1.5rem">Videos</h3>`+V.map(i=>`<div class="card"><div class="row"><b>${esc(i.titulo)}</b>${x(i)}</div><video controls preload="metadata" playsinline src="${esc(i.url)}" style="width:100%;max-height:70vh;border-radius:8px;background:#000"></video></div>`).join(""):"")+`<h3 style="margin-top:1.5rem">Biblioteca de PDFs</h3><div class="lib">`+(F.map(i=>`<div class="card pdf"><div class="cv" style="background-image:url(${esc(i.portada)})">${i.portada?"":"📄"}</div><b>${esc(i.titulo)}</b><div class="row" style="margin-top:.5rem"><a class="b" href="${esc(i.url)}" target="_blank" rel="noopener">Abrir PDF</a>${x(i)}</div></div>`).join("")||"<small>Todavía no hay PDFs.</small>")+"</div>"};
 const items=async id=>(await getDocs(collection(db,"materias",id,"items"))).docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.ts||0)-(a.ts||0));
 async function cont(id){const[m,I]=await Promise.all([getDoc(doc(db,"materias",id)),items(id)]);
  pane(`<button class="o" onclick="backM()">← Materias</button><h2 style="margin-top:1rem">${esc(m.data()?.nombre)}</h2>
  <form id="ft" class="card"><h3>Escribir contenido</h3><label>Título<input name="t" required></label><label>Texto<textarea name="x" rows="6" required></textarea></label><button>Publicar texto</button></form>
- <form id="fp" class="card"><h3>Subir PDF a la biblioteca</h3><label>Título<input name="t" required></label><label>Foto de portada (opcional)<input name="c" type="file" accept="image/*"></label><label>Archivo PDF<input name="f" type="file" accept="application/pdf" required></label><button>Subir PDF</button><p id="st"></p></form>`+lib(I,true,id));
+ <form id="fp" class="card"><h3>Subir PDF a la biblioteca</h3><label>Título<input name="t" required></label><label>Foto de portada (opcional)<input name="c" type="file" accept="image/*"></label><label>Archivo PDF<input name="f" type="file" accept="application/pdf" required></label><button>Subir PDF</button><p id="st"></p></form><form id="fv" class="card"><h3>Subir video</h3><label>Título<input name="t" required></label><label>Archivo de video<input name="f" type="file" accept="video/*" required></label><button>Subir video</button><p id="sv"></p></form>`+lib(I,true,id));
  W({backM:()=>P.Materias(),delI:async(mid,iid)=>{if(confirm("¿Eliminar?")){await deleteDoc(doc(db,"materias",mid,"items",iid));cont(mid)}}});
  $("#ft").onsubmit=async e=>{e.preventDefault();const f=e.target;await addDoc(collection(db,"materias",id,"items"),{tipo:"texto",titulo:f.t.value,texto:f.x.value,ts:Date.now()});cont(id)};
  $("#fp").onsubmit=async e=>{e.preventDefault();const f=e.target;$("#st").textContent="Subiendo… puede tardar.";try{const u=await up(f.f.files[0]),c=f.c.files[0]?(await up(f.c.files[0])).url:"";
-  await addDoc(collection(db,"materias",id,"items"),{tipo:"pdf",titulo:f.t.value,url:u.url,portada:c,ts:Date.now()});cont(id)}catch(x){$("#st").textContent=x.message}}}
+  await addDoc(collection(db,"materias",id,"items"),{tipo:"pdf",titulo:f.t.value,url:u.url,portada:c,ts:Date.now()});cont(id)}catch(x){$("#st").textContent=x.message}};
+ $("#fv").onsubmit=async e=>{e.preventDefault();const f=e.target;$("#sv").textContent="Subiendo video… puede tardar varios minutos. No cierres la página.";try{const u=await up(f.f.files[0]);await addDoc(collection(db,"materias",id,"items"),{tipo:"video",titulo:f.t.value,url:u.url,ts:Date.now()});cont(id)}catch(x){$("#sv").textContent=x.message}}}
 async function verMat(id){const[m,I]=await Promise.all([getDoc(doc(db,"materias",id)),items(id)]);
  pane(`<button class="o" onclick="backA()">← Mis materias</button><h2 style="margin-top:1rem">${esc(m.data()?.nombre)}</h2>`+lib(I,false,id))}
 W({cont,verMat,backA:()=>alumno()});
+
+let Q=[];
+const qh=()=>Q.map((q,i)=>`<div class="card"><div class="row"><b>${i+1}. ${q.tipo==="mc"?"Opción múltiple":"Desarrollo"}</b><button type="button" class="x" onclick="qdel(${i})">Quitar</button></div>
+<label>Enunciado<textarea rows="2" oninput="qset(${i},'texto',this.value)">${esc(q.texto)}</textarea></label>`+(q.tipo==="mc"?q.ops.map((o,j)=>`<div class="row" style="flex-wrap:nowrap;gap:.6rem"><input type="radio" name="r${i}" ${q.ok===j?"checked":""} onchange="qset(${i},'ok',${j})" aria-label="Opción correcta" style="width:auto;margin:0"><input value="${esc(o)}" placeholder="Opción ${j+1}" oninput="qset(${i},'ops',this.value,${j})" style="margin:.25rem 0"></div>`).join("")+"<small>Marcá con el círculo la opción correcta.</small>":"")+`</div>`).join("");
+const rq=()=>$("#qs").innerHTML=qh();
+async function exam(){Q=[];const[L,S,M]=await Promise.all([list("examenes"),list("users",where("role","==","student")),list("materias")]);
+ pane(`<h2>Exámenes</h2><form id="fe" class="card"><h3>Crear examen</h3><label>Título<input name="t" required></label>
+ <label>Materia (opcional)<select name="m"><option value="">— Sin materia —</option>${M.map(m=>`<option>${esc(m.nombre)}</option>`).join("")}</select></label>
+ <p>Alumnos que lo rinden:</p>${stuBox(S)}<div id="qs" style="margin-top:1rem"></div>
+ <div class="row" style="margin:.8rem 0;justify-content:flex-start"><button type="button" class="o" onclick="qadd('dis')">+ Pregunta de desarrollo</button><button type="button" class="o" onclick="qadd('mc')">+ Opción múltiple</button></div>
+ <button>Publicar examen</button><p id="st"></p></form><h3>Mis exámenes</h3>`+
+ (L.map(e=>`<div class="card row"><div><b>${esc(e.titulo)}</b><br><small>${esc(e.materia||"")} · ${e.preguntas.length} pregunta(s) · ${e.alumnos.length} alumno(s)</small></div><div><button onclick="entr('${e.id}')">Entregas y notas</button> <button class="x" onclick="delE('${e.id}')">Eliminar</button></div></div>`).join("")||"<p>Todavía no creaste exámenes.</p>"));
+ W({qset:(i,k,v,j)=>{if(k==="ops")Q[i].ops[j]=v;else Q[i][k]=v},qdel:i=>{Q.splice(i,1);rq()},qadd:t=>{Q.push(t==="mc"?{tipo:"mc",texto:"",ops:["","","",""],ok:0}:{tipo:"dis",texto:""});rq()}});
+ $("#fe").onsubmit=async e=>{e.preventDefault();const f=e.target,al=checked(f),st=m=>$("#st").textContent=m;
+  if(!Q.length)return st("Agregá al menos una pregunta.");if(!al.length)return st("Elegí al menos un alumno.");
+  const P_=[],K=[];
+  for(const q of Q){if(!q.texto.trim())return st("Completá el enunciado de todas las preguntas.");
+   if(q.tipo==="mc"){const ix=q.ops.map((o,j)=>o.trim()?j:-1).filter(j=>j>=0),ok=ix.indexOf(q.ok);
+    if(ix.length<2)return st("Cada pregunta de opción múltiple necesita al menos 2 opciones.");if(ok<0)return st("La opción correcta no puede estar vacía.");
+    P_.push({tipo:"mc",texto:q.texto,opciones:ix.map(j=>q.ops[j])});K.push(ok)}else{P_.push({tipo:"dis",texto:q.texto});K.push(null)}}
+  try{const r=await addDoc(collection(db,"examenes"),{titulo:f.t.value,materia:f.m.value,alumnos:al,preguntas:P_,ts:Date.now()});
+   await setDoc(doc(db,"examenes",r.id,"clave","k"),{correctas:K});exam()}catch(x){st(x.message)}}}
+async function entr(id){const[ex,E,k]=await Promise.all([getDoc(doc(db,"examenes",id)),list("entregas",where("examen","==",id)),getDoc(doc(db,"examenes",id,"clave","k"))]);
+ const e=ex.data(),C=k.exists()?k.data().correctas:[],mcN=e.preguntas.filter(q=>q.tipo==="mc").length;
+ pane(`<button class="o" onclick="exam()">← Exámenes</button><h2 style="margin-top:1rem">${esc(e.titulo)}</h2>`+(E.map(x=>{const h=e.preguntas.filter((q,i)=>q.tipo==="mc"&&x.respuestas[i]===C[i]).length;
+  return `<form class="card" data-e="${x.id}"><div class="row"><b>${esc(x.nombre)}</b><small>${x.estado==="corregida"?"Nota: "+x.nota:"Pendiente de corrección"}</small></div>`+
+  e.preguntas.map((q,i)=>`<p><b>${i+1}. ${esc(q.texto)}</b><br>`+(q.tipo==="mc"?`${x.respuestas[i]!=null?esc(q.opciones[x.respuestas[i]]):"<i>Sin respuesta</i>"} ${x.respuestas[i]===C[i]?"✅":"❌"} <small>(correcta: ${esc(q.opciones[C[i]])})</small>`:`<span style="white-space:pre-wrap">${esc(x.respuestas[i])||"<i>Sin respuesta</i>"}</span>`)+`</p>`).join("")+
+  (mcN?`<small>Aciertos en opción múltiple: ${h} de ${mcN}</small>`:"")+
+  `<label>Nota (0 a 10)<input name="n" type="number" min="0" max="10" step="0.1" value="${x.nota??""}" required></label><label>Comentario para el alumno<textarea name="c" rows="2">${esc(x.comentario)}</textarea></label><div class="row"><button>Guardar nota</button><button type="button" class="x" onclick="delN('${x.id}','${id}')">Eliminar entrega</button></div></form>`}).join("")||"<p>Nadie entregó todavía.</p>"));
+ document.querySelectorAll("form[data-e]").forEach(f=>f.onsubmit=async ev=>{ev.preventDefault();await updateDoc(doc(db,"entregas",f.dataset.e),{nota:+f.n.value,comentario:f.c.value,estado:"corregida"});entr(id)})}
+P["Exámenes"]=()=>exam();
+W({exam,entr,async delN(x,id){if(confirm("¿Eliminar esta entrega y su nota? No se puede deshacer.")){await deleteDoc(doc(db,"entregas",x));entr(id)}},
+ async delE(id){if(confirm("¿Eliminar el examen con todas las entregas y notas? No se puede deshacer.")){for(const x of await list("entregas",where("examen","==",id)))await deleteDoc(doc(db,"entregas",x.id));
+  await deleteDoc(doc(db,"examenes",id,"clave","k")).catch(()=>{});await deleteDoc(doc(db,"examenes",id));exam()}}});
+const exSec=(X,N)=>`<h2 style="margin-top:2rem">Mis exámenes</h2>`+(X.map(e=>{const n=N.find(x=>x.examen===e.id);
+ return `<div class="card row"><div><b>${esc(e.titulo)}</b><br><small>${esc(e.materia||"")}</small></div>`+(!n?`<button onclick="rendir('${e.id}')">Rendir examen</button>`:n.estado==="corregida"?`<div style="text-align:right"><div class="big ok" style="padding:.4rem 1rem;font-size:2rem">${n.nota} / 10</div>${n.comentario?`<small>${esc(n.comentario)}</small>`:""}</div>`:`<small>Enviado · esperando corrección</small>`)+`</div>`}).join("")||"<p>No tenés exámenes por ahora.</p>");
+async function rendir(id){const e=(await getDoc(doc(db,"examenes",id))).data();
+ pane(`<button class="o" onclick="backA()">← Volver</button><h2 style="margin-top:1rem">${esc(e.titulo)}</h2><form id="fr">`+e.preguntas.map((q,i)=>`<div class="card"><b>${i+1}. ${esc(q.texto)}</b><br>`+(q.tipo==="mc"?q.opciones.map((o,j)=>`<label class="ck" style="display:flex;margin:.5rem 0"><input type="radio" name="q${i}" value="${j}">${esc(o)}</label>`).join(""):`<textarea name="q${i}" rows="5" placeholder="Escribí tu respuesta"></textarea>`)+`</div>`).join("")+`<button>Enviar examen</button><p id="st"></p></form>`);
+ $("#fr").onsubmit=async ev=>{ev.preventDefault();if(!confirm("Una vez enviado no podés cambiar tus respuestas. ¿Enviar?"))return;const f=ev.target;
+  const r=e.preguntas.map((q,i)=>{if(q.tipo!=="mc")return f["q"+i].value;const c=f.querySelector(`[name=q${i}]:checked`);return c?+c.value:null});
+  try{await setDoc(doc(db,"entregas",id+"_"+me.id),{examen:id,uid:me.id,nombre:me.nombre,titulo:e.titulo,respuestas:r,nota:null,comentario:"",estado:"pendiente",ts:Date.now()});alumno()}catch(x){$("#st").textContent="No se pudo enviar: "+x.message}}}
+W({rendir});
 W({async del(c,id,t){if(confirm("¿Eliminar?")){await deleteDoc(doc(db,c,id));reload(t)}}});
 /* ---------- ALUMNO ---------- */
 async function alumno(){
- const[M,C]=await Promise.all([list("materias",where("alumnos","array-contains",me.id)),list("canciones",where("para","array-contains",me.id))]);
+ const[M,C,X,N]=await Promise.all([list("materias",where("alumnos","array-contains",me.id)),list("canciones",where("para","array-contains",me.id)),list("examenes",where("alumnos","array-contains",me.id)),list("entregas",where("uid","==",me.id))]);
  const st=me.beca?["be","Beca completa 🎓"]:me.estado==="ok"?["ok","Todo en orden ✓"]:["pe","Pago pendiente"];
  pane(`<div class="row"><img class="av" src="${esc(me.foto)||"icon-192.png"}" alt="Mi foto"><div><h2 style="margin:0">Hola, ${esc(me.nombre)}</h2><label class="b o" style="cursor:pointer">Cambiar foto<input id="ft" type="file" accept="image/*" hidden></label></div></div>
  <div class="big ${st[0]}" style="margin-top:1rem">${st[1]}${!me.beca?`<div style="font-size:1.1rem;font-family:Jost;color:var(--t)">Cuota ${money(me.monto)}${me.vence?" · vence el "+me.vence.split("-").reverse().join("/"):""}${me.alias?`<br>Alias para transferir: <b>${esc(me.alias)}</b>`:""}</div>`:""}</div>
  <h2 style="margin-top:2rem">Mis materias</h2>`+(M.map(m=>`<div class="card mat" role="button" tabindex="0" onclick="verMat('${m.id}')" style="cursor:pointer;background-image:linear-gradient(#000a,#000a),url(${esc(m.fondo)})"><h3>${esc(m.nombre)}</h3><small>Tocá para ver textos y biblioteca de PDFs</small></div>`).join("")||"<p>Todavía no tenés materias asignadas.</p>")+
- `<h2 style="margin-top:2rem">Mi música</h2>`+(C.map(c=>`<div class="card">${esc(c.titulo)}<audio controls src="${esc(c.url)}" style="width:100%"></audio></div>`).join("")||"<p>Sin canciones por ahora.</p>"));
+ exSec(X,N)+`<h2 style="margin-top:2rem">Mi música</h2>`+(C.map(c=>`<div class="card">${esc(c.titulo)}<audio controls src="${esc(c.url)}" style="width:100%"></audio></div>`).join("")||"<p>Sin canciones por ahora.</p>"));
  $("#ft").onchange=async e=>{try{const r=await up(e.target.files[0]);await updateDoc(doc(db,"users",me.id),{foto:r.url});me.foto=r.url;alumno()}catch(x){alert(x.message)}}
 }
 W({landing});
